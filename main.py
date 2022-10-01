@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from fastapi import FastAPI
 
@@ -16,11 +17,6 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/items/{item_id}")
-async def read_item(item_id: int):
-    return {"item_id": item_id}
-
-
 @app.get("/models/{model_name}")
 async def get_model(model_name: ModelName):
     if model_name is ModelName.test1:
@@ -30,3 +26,11 @@ async def get_model(model_name: ModelName):
         return {"model_name": model_name, "message": "test2 model"}
 
     return {"model_name": model_name, "message": "test3 model"}
+
+
+@app.get("/items/{item_id}")
+async def read_item(item_id: str, q: Optional[str] = None):
+    if q:
+        return {"item_id": item_id, "q": q}
+
+    return {"item_id": item_id}

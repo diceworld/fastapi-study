@@ -1,36 +1,23 @@
-from enum import Enum
 from typing import Optional
 
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
 
-class ModelName(str, Enum):
-    test1 = "test1"
-    test2 = "test2"
-    test3 = "test3"
+class Item(BaseModel):
+    name: str
+    description: Optional[str] = None
+    price: float
+    tax: Optional[float] = None
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+@app.post("/items/{item_id}")
+async def create_item(item_id: int, item: Item, q: Optional[str] = None):
+    result = {"item_id": item_id, **item.dict()}
 
-
-@app.get("/models/{model_name}")
-async def get_model(model_name: ModelName):
-    if model_name is ModelName.test1:
-        return {"model_name": model_name, "message": "test1 model"}
-
-    if model_name is ModelName.test2:
-        return {"model_name": model_name, "message": "test2 model"}
-
-    return {"model_name": model_name, "message": "test3 model"}
-
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: str, q: Optional[str] = None):
     if q:
-        return {"item_id": item_id, "q": q}
+        result.update({"q": q})
 
-    return {"item_id": item_id}
+    return result

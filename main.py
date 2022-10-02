@@ -1,37 +1,37 @@
-from typing import Optional, List
+import uuid
+from datetime import datetime, time, timedelta
+from typing import Optional
+from uuid import UUID
 
 from fastapi import FastAPI, Body
-from pydantic import BaseModel, Field, HttpUrl
 
 app = FastAPI()
 
 
-class Item(BaseModel):
-    name: str
-    description: Optional[str] = None
-    price: float
-    tax: Optional[float] = None
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "name": "Foo",
-                "description": "A very nice Item",
-                "price": 35.4,
-                "tax": 3.2,
-            }
-        }
-
-
-class Item2(BaseModel):
-    name: str = Field(example="Foo")
-    description: Optional[str] = Field(default=None, example="A very nice Item")
-    price: float = Field(example=35.4)
-    tax: Optional[float] = Field(default=None, example=3.2)
+@app.get("/uuid")
+async def get_uuid():
+    return {
+        "uuid": uuid.uuid1(),
+    }
 
 
 @app.put("/items/{item_id}")
-async def update_item(item_id: int, item: Item, item2: Item2):
-    results = {"item_id": item_id, "item": item, "item2": item2}
+async def read_items(
+        item_id: UUID,
+        start_datetime: Optional[datetime] = Body(default=None),
+        end_datetime: Optional[datetime] = Body(default=None),
+        repeat_at: Optional[time] = Body(default=None),
+        process_after: Optional[timedelta] = Body(default=None)
+):
+    start_process = start_datetime + process_after
+    duration = end_datetime - start_process
 
-    return results
+    return {
+        "item_id": item_id,
+        "start_datetime": start_datetime,
+        "end_datetime": end_datetime,
+        "repeat_at": repeat_at,
+        "precess_after": process_after,
+        "start_process": start_process,
+        "duration": duration
+    }

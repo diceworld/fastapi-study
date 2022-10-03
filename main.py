@@ -1,38 +1,44 @@
-from fastapi import FastAPI, HTTPException, status, Request
-from fastapi.responses import JSONResponse
+from enum import Enum
+from typing import Union, Set
+
+from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
-items = {"foo": "The Foo Wrestlers"}
+
+class Tags(Enum):
+    items = "items"
+    users = "users"
 
 
-@app.get("/items/{item_id}")
-async def read_item(item_id: str):
-    if item_id not in items:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Item not found",
-            headers={"X-Error": "There goes my error"}
-        )
-
-    return {"item": items[item_id]}
+class Item(BaseModel):
+    name: str
+    description: Union[str, None] = None
+    price: float
+    tax: Union[float, None] = None
+    tags: Set[str] = set()
 
 
-class UnicornException(Exception):
-    def __init__(self, name: str):
-        self.name = name
+@app.post(
+    "/items/",
+    response_model=Item,
+    summary="Create an item",
+    tags=[Tags.items]
+)
+async def create_item(item: Item):
+    """
+    Create an item with all the information:
+
+    - **name**: each item must have a name
+    - **description**: a long description
+    - **price**: required
+    - **tax**: if the item doesn't have tax, you can omit this
+    - **tags**: a set of unique tag strings for this item
+    """
+    return item
 
 
-@app.exception_handler(UnicornException)
-async def unicorn_exception_handler(request: Request, exc: UnicornException):
-    return JSONResponse(
-        status_code=status.HTTP_418_IM_A_TEAPOT,
-        content={"message": f"Oops! {exc.name} did something. There goes a rainbow ..."},
-    )
-
-
-@app.get("/unicorns/{name}")
-async def raed_unicorn(name: str):
-    if name == "yolo":
-        raise UnicornException(name=name)
-    return {"unicorn_name": name}
+@app.get("/users/", tags=[Tags.users])
+async def read_users():
+    return ["Rick", "Morty"]

@@ -1,8 +1,14 @@
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Form, File, UploadFile
 
 app = FastAPI()
 
 
-@app.post("/items/", status_code=status.HTTP_201_CREATED)
-async def create_item(name: str):
-    return {"name": name}
+@app.post("/files/")
+async def create_file(
+        file: bytes = File(), fileb: UploadFile = File(), token: str = Form()
+):
+    return {
+        "file_size": len(file),
+        "token": token,
+        "fileb_content_type": fileb.content_type,
+    }

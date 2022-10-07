@@ -2,11 +2,14 @@ from fastapi import Depends, FastAPI
 
 from .dependencies import get_query_token, get_token_header
 from .internal import admin
-from .routers import items, users, enum, query, base_model, body
+from .routers import items, users, enum, query, base_model, body, extra, response_model, extra_model
 
 app = FastAPI(dependencies=[Depends(get_query_token)])
 
 
+app.include_router(extra_model.router)
+app.include_router(response_model.router)
+app.include_router(extra.router)
 app.include_router(body.router)
 app.include_router(base_model.router)
 app.include_router(query.router)
